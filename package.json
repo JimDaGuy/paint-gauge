@@ -1,0 +1,12 @@
+{
+  "name": "paint-guage-root",
+  "version": "1.0.0",
+  "engines": {
+    "node": "8.9.4"
+  },
+  "scripts": {
+    "start": "cd server && npm start"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
