@@ -5,7 +5,7 @@
     "node": "8.9.4"
   },
   "scripts": {
-    "start": "cd ./server && npm run dev"
+    "start": "cd ./server && npm run dev && npm run heroku-postbuild"
   },
   "dependencies": {},
   "devDependencies": {}
