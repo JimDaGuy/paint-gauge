@@ -1,21 +1,30 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import Header from './components/header.js'
+import PaintCarousel from './components/paintcarousel.js'
+import Ratings from './components/ratings.js'
 import './App.css';
 
 class App extends Component {
   state = {
-    response: ''
+    imageSrc: '',
+    artName: '',
+    id: ''
   };
 
   componentDidMount() {
     this.callApi()
-      .then(res => this.setState({ response: res.express }))
-      .catch(err => console.log(err));
+      .then(res => this.setState({
+        imageSrc: res.primaryimageurl + '?width=450',
+        artName: res.title,
+        id: res.id
+      }))
+      .catch(err => {
+        throw err;
+      });
   }
 
   callApi = async () => {
-    const response = await fetch('/api/hello');
+    const response = await fetch('/api/getRandomPainting');
     const body = await response.json();
 
     if (response.status !== 200) throw Error(body.message);
@@ -23,16 +32,50 @@ class App extends Component {
     return body;
   };
 
+  sendRating = async (e) => {
+    var rating = e.target.parentElement.attributes.value.value;
+    var id = this.state.id;
+    var artName = this.state.artName;
+
+    //console.log(`Set rating to: ${rating}, id:${id}, name:${artName}`);
+
+    await fetch('/api/sendRating', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        rating: rating,
+        id: id,
+        artName: artName
+      })
+    });
+
+    //const ratingResponse = await test.json();
+    //console.log(ratingResponse);
+
+    this.getNewPainting();
+  }
+
+  getNewPainting = () => {
+    this.callApi()
+    .then(res => this.setState({
+      imageSrc: res.primaryimageurl + '?width=450',
+      artName: res.title,
+      id: res.id
+    }))
+    .catch(err => {
+      throw err;
+    });
+  }
+
   render() {
     return (
       <div className="App">
-        <Header></Header>
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <img src="https://via.placeholder.com/500x500" alt="artName"/>
-        <p className="App-intro">{this.state.response}</p>
+        <Header />
+        <PaintCarousel imageSrc={this.state.imageSrc} artName={this.state.artName} />
+        <Ratings artName={this.state.artName} sendRating={this.sendRating} />
       </div>
     );
   }

@@ -1,33 +1,33 @@
 /*Smartphones*/
-.header {
+.ratingBar {
     background-color: springgreen;
-    min-width: 450px;
     width: 100%;
     margin: 0 auto;
+    min-width: 450px;
 }
 
-.topH1 {
+.ratingH1 {
     color: black;
     margin: 0;
 }
 
 /*Tablets*/
 @media screen and (min-width: 769px) and (max-width: 992px) {
-    .header {
+    .ratingBar {
         width: 60%;
     }
 }
 
 /*Medium*/
 @media screen and (min-width: 993px) and (max-width: 1200px) {
-    .header {
+    .ratingBar {
         width: 60%;
     }
 }
 
 /*Large*/
 @media screen and (min-width: 1201px) {
-    .header {
+    .ratingBar {
         width: 40%;
     }
 }

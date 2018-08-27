@@ -3,11 +3,10 @@ import './header.css'
 
 class Header extends Component {
     render() {
-        return( 
-        <header>
-            <h1>Paint Guage</h1>
-            <h2>WIP</h2>
-        </header>
+        return (
+            <header className="header">
+                <h1 className="topH1">PaintGuage</h1>
+            </header>
         )
     }
 }
