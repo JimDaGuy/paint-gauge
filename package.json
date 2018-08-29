@@ -1,6 +1,12 @@
 {
   "name": "paint-guage-server",
   "version": "1.0.0",
+  "description": "Painting rating application powered by the Harvard Museum API",
+  "author": {
+    "name": "James DiGrazia",  
+    "email": "jtd2401@rit.edu"
+  },
+  "license": "MIT",
   "engines": {
     "node": "8.9.4"
   },
@@ -21,5 +27,9 @@
   },
   "devDependencies": {
     "concurrently": "^3.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JimDaGuy/paint-gauge.git"
   }
 }
