@@ -80,7 +80,7 @@ const getRandomPainting = (req, res) => {
       }
       else {
         randomPainting = JSON.stringify(randomPainting)
-        res.send(randomPainting)
+        res.status(200).send(randomPainting)
       }
 
     })
@@ -96,5 +96,5 @@ const sendRating = (req, res) => {
   console.log(`Adding rating to db: ${rating} stars for ${artName} ID: ${id}`)
   
 
-  res.send('{"Worked": true}')
+  res.status(200).send('Successful')
 }

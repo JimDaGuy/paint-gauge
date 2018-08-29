@@ -33,12 +33,20 @@ class App extends Component {
   };
 
   sendRating = async (e) => {
+    //console.dir(e.target.parentElement.nodeName)
+
+    if (e.target.parentElement.nodeName !== 'svg')
+      return;
+
+    console.dir(e.target.parentElement)
+
     var rating = e.target.parentElement.attributes.value.value;
     var id = this.state.id;
     var artName = this.state.artName;
 
     //console.log(`Set rating to: ${rating}, id:${id}, name:${artName}`);
 
+    //const post = 
     await fetch('/api/sendRating', {
       method: 'POST',
       headers: {
@@ -52,33 +60,32 @@ class App extends Component {
       })
     });
 
-    //const ratingResponse = await test.json();
-    //console.log(ratingResponse);
+    //post.res
 
     this.getNewPainting();
   }
 
   getNewPainting = () => {
     this.callApi()
-    .then(res => this.setState({
-      imageSrc: res.primaryimageurl + '?width=450',
-      artName: res.title,
-      id: res.id
-    }))
-    .catch(err => {
-      throw err;
-    });
+      .then(res => this.setState({
+        imageSrc: res.primaryimageurl + '?width=450',
+        artName: res.title,
+        id: res.id
+      }))
+      .catch(err => {
+        throw err;
+      });
   }
 
-  render() {
-    return (
-      <div className="App">
-        <Header />
-        <PaintCarousel imageSrc={this.state.imageSrc} artName={this.state.artName} />
-        <Ratings artName={this.state.artName} sendRating={this.sendRating} />
-      </div>
-    );
-  }
+render() {
+  return (
+    <div className="App">
+      <Header />
+      <PaintCarousel imageSrc={this.state.imageSrc} artName={this.state.artName} />
+      <Ratings artName={this.state.artName} sendRating={this.sendRating} />
+    </div>
+  );
+}
 }
 
 export default App;

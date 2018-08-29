@@ -1,12 +1,25 @@
 {
-  "name": "paint-guage-root",
+  "name": "paint-guage-server",
   "version": "1.0.0",
   "engines": {
     "node": "8.9.4"
   },
   "scripts": {
-    "start": "cd ./server && npm run heroku-postbuild"
+    "client": "cd client && yarn start",
+    "server": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
+    "start": "node server.js",
+    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "body-parser": "1.18.3",
+    "express": "^4.16.3",
+    "mathjs": "5.1.1",
+    "mongodb": "^3.1.1",
+    "mongoose": "^5.2.7",
+    "request": "2.88.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.0"
+  }
 }
