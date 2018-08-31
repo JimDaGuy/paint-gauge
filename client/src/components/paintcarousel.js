@@ -25,16 +25,13 @@ const loadingSpinnerOptions = {
 };
 
 class PaintCarousel extends Component {
-    constructor(props) {
-        super(props);
-        this.artName = props.artName;
-        this.imageSrc = props.imageSrc;
-    }
-
     componentDidMount() {
         var spinnerTarget = document.getElementById('loadingSpinner');
         var spinner = new Spinner(loadingSpinnerOptions).spin(spinnerTarget);
         spinner.spin();
+
+        //var carousel = document.getElementById('ci');
+        //carousel.onLoad = this.delayedUnlock;
     }
 
     stopSpinner = () => {
@@ -45,10 +42,19 @@ class PaintCarousel extends Component {
         //spinner.spin();
     }
 
+    //When the image .onload is called,
+    //check the .complete property until it is set to true
+    //Unlock the rating afterwards
+    delayedUnlock = () => {
+        setTimeout(() => { this.props.unlockRating(); }, 500);
+    }
+
     render() {
+        const { artName, imageSrc, unlockRating } = this.props;
+
         return (
             <div>
-                <img className="carouselImage" src={this.props.imageSrc} alt={this.props.artName} />
+                <img id="ci" className="carouselImage" src={imageSrc} alt={artName} onLoad={unlockRating}/>
             </div>
         )
     }
@@ -56,7 +62,8 @@ class PaintCarousel extends Component {
 
 PaintCarousel.propTypes = {
     artName: PropTypes.string,
-    imageSrc: PropTypes.string
+    imageSrc: PropTypes.string,
+    unlockRating: PropTypes.func
 };
 
 export default PaintCarousel;

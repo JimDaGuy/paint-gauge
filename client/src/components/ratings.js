@@ -5,13 +5,6 @@ import { faStar } from '@fortawesome/free-solid-svg-icons'
 import PropTypes from 'prop-types';
 
 class Ratings extends Component {
-    constructor(props) {
-        super(props);
-        this.artName = props.artName;
-        this.sendRating = props.sendRating.bind(this);
-        this.locked = props.locked;
-    }
-
     getValue = () => {
         return this.value;
     }
@@ -37,14 +30,16 @@ class Ratings extends Component {
     }
 
     render() {
+        const { artName, sendRating } = this.props;
+
         return (
             <div className="ratingBar">
-                <h2 className="ratingH1">{this.props.artName}</h2>
-                <FontAwesomeIcon className="star" icon={faStar} value="1" onClick={e => this.props.sendRating(e)} />
-                <FontAwesomeIcon className="star" icon={faStar} value="2" onClick={e => this.props.sendRating(e)} />
-                <FontAwesomeIcon className="star" icon={faStar} value="3" onClick={e => this.props.sendRating(e)} />
-                <FontAwesomeIcon className="star" icon={faStar} value="4" onClick={e => this.props.sendRating(e)} />
-                <FontAwesomeIcon className="star" icon={faStar} value="5" onClick={e => this.props.sendRating(e)} />
+                <h2 className="ratingH1">{artName}</h2>
+                <FontAwesomeIcon className="star" icon={faStar} value="1" onClick={() => sendRating(1)} />
+                <FontAwesomeIcon className="star" icon={faStar} value="2" onClick={() => sendRating(2)} />
+                <FontAwesomeIcon className="star" icon={faStar} value="3" onClick={() => sendRating(3)} />
+                <FontAwesomeIcon className="star" icon={faStar} value="4" onClick={() => sendRating(4)} />
+                <FontAwesomeIcon className="star" icon={faStar} value="5" onClick={() => sendRating(5)} />
             </div>
         )
     }

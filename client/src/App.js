@@ -26,10 +26,9 @@ class App extends Component {
 
   callApi = async () => {
     const response = await fetch('/api/getRandomPainting');
-
-    const body = await response.json()
-      .then(this.ratingComponent.resetStars())
-      .then(this.state.locked = false);
+    
+    const body = await response.json().catch(console.log(response))
+      .then(this.ratingComponent.resetStars());
 
     if (response.status !== 200)
       throw Error(body.message);
@@ -38,27 +37,16 @@ class App extends Component {
   };
 
   //Send a rating for the current painting and grab a new painting
-  sendRating = async (e) => {
+  sendRating = async (ratingNum) => {
     //Don't send a rating if the component is locked
     if (this.state.locked)
       return;
 
-    //Return from the function if FontAwesome is a little weird and the parent element is missing
-    if (e.target.parentElement.nodeName !== 'svg')
-      return;
-
-    //Weird way to get value attribute because I'm using FontAwesome icons
-    var rating = e.target.parentElement.attributes.value.value;
-    var id = this.state.id;
-    var artName = this.state.artName;
-
     //Highlight stars in the rating component
-    this.ratingComponent.highlightStars(rating);
+    this.ratingComponent.highlightStars(ratingNum);
 
     //Lock the rating component to prevent sending ratings before a new image has loaded
-    this.setState({
-      locked: true
-    });
+    this.setState({ locked: true });
 
     //Send a POST to the API with the rating, id, and name of the art
     await fetch('/api/sendRating', {
@@ -68,9 +56,9 @@ class App extends Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        rating: rating,
-        id: id,
-        artName: artName
+        rating: ratingNum,
+        id: this.state.id,
+        artName: this.state.artName
       })
     });
 
@@ -84,19 +72,22 @@ class App extends Component {
       .then(res => this.setState({
         imageSrc: res.primaryimageurl + '?width=450',
         artName: res.title,
-        id: res.id,
-        locked: false
+        id: res.id
       }))
       .catch(err => {
         throw err;
       });
   }
 
+  unlockRating = () => {
+    this.setState({ locked: false });
+  }
+
   render() {
     return (
       <div className="App">
         <Header />
-        <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} />
+        <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} unlockRating={this.unlockRating} />
         <Ratings ref={instance => { this.ratingComponent = instance; }} artName={this.state.artName} sendRating={this.sendRating} />
       </div>
     );

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Painting rating application powered by the Harvard Museum API",
   "author": {
-    "name": "James DiGrazia",  
+    "name": "James DiGrazia",
     "email": "jtd2401@rit.edu"
   },
   "license": "MIT",
