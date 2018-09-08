@@ -55,8 +55,35 @@ tables.push(ratingTable);
 
 // Functions for routes
 
+const setupTables = () => {
+  // Iterate through array of table objects and create them in the database
+  tables.forEach((table) => {
+    let tableQuery = `CREATE TABLE IF NOT EXISTS ${table.name} (`;
+
+    // Get the attributes of the columns attribute in the current table
+    const tableColumns = Object.keys(table.columns);
+
+    // Iterate through the keys of a column to form a query that creates the table
+    for (let i = 0; i < tableColumns.length; i++) {
+      tableQuery += `${tableColumns[i]} ${table.columns[tableColumns[i]]} `;
+    }
+    tableQuery += ')';
+
+    // Query the db to create the table
+    connection.query(tableQuery, (err) => {
+      if (err) throw err;
+      console.log(`Table created: ${table.name}`);
+    });
+  });
+};
+
 const setupDB = () => {
-  // Create database - pascal case per standard
+  if (process.env.NODE_ENV === 'production') {
+    setupTables();
+    return;
+  }
+
+  // Create database if the app is being run locally
   connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, (err) => {
     if (err) throw err;
 
@@ -64,25 +91,7 @@ const setupDB = () => {
     connection.query(`USE ${databaseName}`, (err2) => {
       if (err2) throw err2;
 
-      // Iterate through array of table objects and create them in the database
-      tables.forEach((table) => {
-        let tableQuery = `CREATE TABLE IF NOT EXISTS ${table.name} (`;
-
-        // Get the attributes of the columns attribute in the current table
-        const tableColumns = Object.keys(table.columns);
-
-        // Iterate through the keys of a column to form a query that creates the table
-        for (let i = 0; i < tableColumns.length; i++) {
-          tableQuery += `${tableColumns[i]} ${table.columns[tableColumns[i]]} `;
-        }
-        tableQuery += ')';
-
-        // Query the db to create the table
-        connection.query(tableQuery, (err3) => {
-          if (err3) throw err3;
-          console.log(`Table created: ${table.name}`);
-        });
-      });
+      setupTables();
     });
   });
 };
