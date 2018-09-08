@@ -158,15 +158,6 @@ const sendRating = (req, res) => {
 
 // Routes
 
-if (process.env.NODE_ENV === 'production') {
-  // Serve any static files
-  app.use(express.static(path.join(__dirname, './client/build')));
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './client/build', 'index.html'));
-  });
-}
-
 app.get('/api/getRandomPainting', (req, res) => {
   getRandomPainting(req, res);
 });
@@ -178,6 +169,15 @@ app.post('/api/addUser', (req, res) => {
 app.post('/api/sendRating', (req, res) => {
   sendRating(req, res);
 });
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, './client/build')));
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './client/build', 'index.html'));
+  });
+}
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
 
