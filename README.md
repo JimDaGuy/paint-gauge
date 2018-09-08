@@ -15,4 +15,7 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
 - [ ] Re-style main rating page
 - [ ] Implement some sort of Auth and tie ratings to a user_id
 - [ ] Implement API routes for grabbing analtyics/other rating data
+- [ ] Implement API routes for non-200 responses
 - [ ] Implement pages for displaying rating information
+- [ ] Implement better error handling to prevent the application from crashing 
+- [ ] Implement unit testing

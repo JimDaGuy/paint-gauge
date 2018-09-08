@@ -4,7 +4,9 @@ const request = require('request');
 const math = require('mathjs');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
-const localvars = require('./localvars.js');
+
+const tabledata = require('./tabledata');
+const localvars = require('./localvars') || {};
 
 const app = express();
 app.use(bodyParser.json());
@@ -25,39 +27,11 @@ if (process.env.CLEARDB_DATABASE_URL != null) {
   });
 }
 
-// Objects for tables that need to be created
-
-const tables = [];
-
-const userTable = {
-  name: 'User',
-  columns: {
-    username: 'VARCHAR(64) UNIQUE NOT NULL PRIMARY KEY,',
-    email: 'VARCHAR(320) NOT NULL,',
-    creationDate: 'TIMESTAMP NOT NULL',
-  },
-};
-
-const ratingTable = {
-  name: 'Rating',
-  columns: {
-    uniqueID: 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY,',
-    paintingID: 'MEDIUMINT NOT NULL,',
-    creationDate: 'TIMESTAMP NOT NULL,',
-    rating: 'TINYINT NOT NULL,',
-    user: 'VARCHAR(64) NOT NULL,',
-    'FOREIGN KEY': '(user) REFERENCES user(username)',
-  },
-};
-
-tables.push(userTable);
-tables.push(ratingTable);
-
 // Functions for routes
 
-const setupTables = () => {
+const setupTables = (tableArray) => {
   // Iterate through array of table objects and create them in the database
-  tables.forEach((table) => {
+  tableArray.forEach((table) => {
     let tableQuery = `CREATE TABLE IF NOT EXISTS ${table.name} (`;
 
     // Get the attributes of the columns attribute in the current table
@@ -78,8 +52,9 @@ const setupTables = () => {
 };
 
 const setupDB = () => {
+  // In production, the database is already created, only need to create the tables
   if (process.env.NODE_ENV === 'production') {
-    setupTables();
+    setupTables(tabledata.tables);
     return;
   }
 
@@ -91,7 +66,7 @@ const setupDB = () => {
     connection.query(`USE ${databaseName}`, (err2) => {
       if (err2) throw err2;
 
-      setupTables();
+      setupTables(tabledata.tables);
     });
   });
 };
@@ -105,11 +80,14 @@ const addUser = (req, res) => {
 
   let addUserQuery = 'INSERT IGNORE INTO User (username, email, creationDate) ';
   addUserQuery += `VALUES ('${params.username}', '${params.email}', NOW())`;
-  connection.query(addUserQuery, (err) => {
-    if (err) throw err;
 
-    console.log(`User created: ${params.username}: ${params.email}`);
-    res.status(200).send(`User created: ${params.username}: ${params.email}`);
+  connection.connect(() => {
+    connection.query(addUserQuery, (err) => {
+      if (err) throw err;
+
+      console.log(`User created: ${params.username}: ${params.email}`);
+      res.status(200).send(`User created: ${params.username}: ${params.email}`);
+    });
   });
 };
 
@@ -161,14 +139,26 @@ const sendRating = (req, res) => {
 
   let sendRatingQuery = 'INSERT IGNORE INTO Rating (paintingID, creationDate, rating, user) ';
   sendRatingQuery += `VALUES ('${params.paintingID}', NOW(), '${params.rating}', '${params.user}')`;
-  connection.query(sendRatingQuery, (err) => {
-    if (err) throw err;
 
-    res.status(200).send(`Sending rating: ${params.rating} stars for ${params.paintingID} by ${params.user}`);
+  connection.connect(() => {
+    connection.query(sendRatingQuery, (err) => {
+      if (err) throw err;
+
+      res.status(200).send(`Sending rating: ${params.rating} stars for ${params.paintingID} by ${params.user}`);
+    });
   });
 };
 
 // Routes
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, './client/build')));
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './client/build', 'index.html'));
+  });
+}
 
 app.get('/api/getRandomPainting', (req, res) => {
   getRandomPainting(req, res);
@@ -181,15 +171,6 @@ app.post('/api/addUser', (req, res) => {
 app.post('/api/sendRating', (req, res) => {
   sendRating(req, res);
 });
-
-if (process.env.NODE_ENV === 'production') {
-  // Serve any static files
-  app.use(express.static(path.join(__dirname, './client/build')));
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './client/build', 'index.html'));
-  });
-}
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
 
