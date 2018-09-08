@@ -9,7 +9,7 @@ class App extends Component {
     imageSrc: '',
     artName: '',
     id: '',
-    locked: true,
+    locked: true
   };
 
   componentDidMount() {
@@ -22,7 +22,7 @@ class App extends Component {
       .catch(err => {
         throw err;
       });
-  }
+  };
 
   callApi = async () => {
     const response = await fetch('/api/getRandomPainting');
@@ -57,8 +57,8 @@ class App extends Component {
       },
       body: JSON.stringify({
         rating: ratingNum,
-        id: this.state.id,
-        artName: this.state.artName
+        paintingID: this.state.id,
+        user: 'default'
       })
     });
 
