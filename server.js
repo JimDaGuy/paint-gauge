@@ -5,8 +5,15 @@ const math = require('mathjs');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 
-const tabledata = require('./tabledata');
-const localvars = require('./localvars') || {};
+const tabledata = require('./tabledata.js');
+
+let localvars;
+try {
+  localvars = require('./localvars.js');
+} catch (error) {
+  console.log('localvars.js is missing');
+  localvars = {};
+}
 
 const app = express();
 app.use(bodyParser.json());
