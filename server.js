@@ -201,8 +201,8 @@ connection.connect((err) => {
 
 // Close connection on exit
 process.on('SIGINT', () => {
-  connection.end();
-  console.log('Closed mysql connection');
+  // connection.end();
+  // console.log('Closed mysql connection');
   console.log('Killing server...');
   process.exit(0);
 });
