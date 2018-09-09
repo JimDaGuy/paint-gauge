@@ -49,20 +49,19 @@ const setupDB = (isProduction) => {
   // In production, the database is already created, only need to create the tables
   if (isProduction) {
     setupTables(tabledata.tables);
-    return;
-  }
+  } else {
+    // Create database if the app is being run locally
+    connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, (err) => {
+      if (err) throw err;
 
-  // Create database if the app is being run locally
-  connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, (err) => {
-    if (err) throw err;
+      console.log(`Database '${databaseName}' created`);
+      connection.query(`USE ${databaseName}`, (err2) => {
+        if (err2) throw err2;
 
-    console.log(`Database '${databaseName}' created`);
-    connection.query(`USE ${databaseName}`, (err2) => {
-      if (err2) throw err2;
-
-      setupTables(tabledata.tables);
+        setupTables(tabledata.tables);
+      });
     });
-  });
+  }
 };
 
 // Function to create the mysql connection and re-establish it if the connection is killed off
