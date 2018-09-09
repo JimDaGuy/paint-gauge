@@ -74,7 +74,8 @@ const establishConnection = (isProduction) => {
   connection.connect((err) => {
     if (err) {
       console.log(`Error connecting to database: ${err}`);
-      setTimeout(establishConnection, 2000);
+      // Wrapping timeout function to pass a parameter to establishConnection 
+      setTimeout(() => { establishConnection(isProduction); }, 2000);
     }
 
     setupDB(isProduction);
@@ -83,7 +84,7 @@ const establishConnection = (isProduction) => {
   connection.on('error', (err) => {
     console.log(`Database error: ${err}`);
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-      establishConnection();
+      establishConnection(isProduction);
     } else {
       throw err;
     }
