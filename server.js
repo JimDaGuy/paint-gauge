@@ -7,13 +7,10 @@ const mysql = require('mysql');
 
 const tabledata = require('./tabledata.js');
 
-let localvars;
-try {
-  localvars = require('./localvars.js');
-} catch (error) {
-  console.log('localvars.js is missing');
-  localvars = {};
-}
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Use local variables file only when running locally
+const localvars = isProduction ? {} : require('./localvars.js');
 
 const app = express();
 app.use(bodyParser.json());
@@ -22,17 +19,41 @@ const PORT = process.env.PORT || 5000;
 const HARVARD_KEY = process.env.HARVARD_KEY || localvars.HARVARD_KEY;
 
 let connection;
+let dbConnectionSettings;
 const databaseName = 'PaintGauge';
 
+// Set db connection settings based on environment
 if (process.env.CLEARDB_DATABASE_URL != null) {
-  connection = mysql.createConnection(process.env.CLEARDB_DATABASE_URL);
+  dbConnectionSettings = process.env.CLEARDB_DATABASE_URL;
 } else {
-  connection = mysql.createConnection({
+  dbConnectionSettings = {
     host: localvars.MYSQL_CREDS.hostname,
     user: localvars.MYSQL_CREDS.username,
     password: localvars.MYSQL_CREDS.password,
-  });
+  };
 }
+
+// Function to create the mysql connection and re-establish it if the connection is killed off
+// Based off of stack overflow solution - https://stackoverflow.com/questions/20210522/nodejs-mysql-error-connection-lost-the-server-closed-the-connection
+const establishConnection = () => {
+  connection = mysql.createConnection(dbConnectionSettings);
+
+  connection.connect((err) => {
+    if (err) {
+      console.log(`Error connecting to database: ${err}`);
+      setTimeout(establishConnection, 2000);
+    }
+  });
+
+  connection.on('error', (err) => {
+    console.log(`Database error: ${err}`);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      establishConnection();
+    } else {
+      throw err;
+    }
+  });
+};
 
 // Functions for routes
 
@@ -60,7 +81,7 @@ const setupTables = (tableArray) => {
 
 const setupDB = () => {
   // In production, the database is already created, only need to create the tables
-  if (process.env.NODE_ENV === 'production') {
+  if (isProduction) {
     setupTables(tabledata.tables);
     return;
   }
@@ -170,7 +191,7 @@ app.post('/api/sendRating', (req, res) => {
   sendRating(req, res);
 });
 
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
   // Serve any static files
   app.use(express.static(path.join(__dirname, './client/build')));
   // Handle React routing, return all requests to React app

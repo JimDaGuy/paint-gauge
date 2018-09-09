@@ -3,7 +3,6 @@ module.exports = {
     "rules": {
         "no-underscore-dangle" : "off",
         "no-plusplus": "off",
-        "linebreak-style": "off",
-        "global-require": "off"
+        "linebreak-style": "off"
     }
 };
