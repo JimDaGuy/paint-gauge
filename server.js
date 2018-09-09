@@ -21,6 +21,17 @@ app.use(bodyParser.json());
 const PORT = process.env.PORT || 5000;
 const HARVARD_KEY = process.env.HARVARD_KEY || localvars.HARVARD_KEY;
 
+let dbConnectionSettings;
+if (process.env.CLEARDB_DATABASE_URL != null) {
+  dbConnectionSettings = process.env.CLEARDB_DATABASE_URL;
+} else {
+  dbConnectionSettings = {
+    host: localvars.MYSQL_CREDS.hostname,
+    user: localvars.MYSQL_CREDS.username,
+    password: localvars.MYSQL_CREDS.password,
+  };
+}
+
 let connection;
 const databaseName = 'PaintGauge';
 
@@ -33,6 +44,26 @@ if (process.env.CLEARDB_DATABASE_URL != null) {
     password: localvars.MYSQL_CREDS.password,
   });
 }
+
+const establishConnection = () => {
+  connection = mysql.createConnection(dbConnectionSettings);
+
+  connection.connect((err) => {
+    if (err) {
+      console.log(`Error connecting to database: ${err}`);
+      setTimeout(establishConnection, 2000);
+    }
+  });
+
+  connection.on('error', (err) => {
+    console.log(`Database error: ${err}`);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      establishConnection();
+    } else {
+      throw err;
+    }
+  });
+};
 
 // Functions for routes
 
