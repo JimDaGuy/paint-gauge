@@ -48,8 +48,10 @@ const setupTables = (tableArray) => {
 const setupDB = (isProduction) => {
   // In production, the database is already created, only need to create the tables
   if (isProduction) {
+    console.log(`Only creating tables because isProduction = ${isProduction}`);
     setupTables(tabledata.tables);
   } else {
+    console.log(`Setting up db because isProduction = ${isProduction}`);
     // Create database if the app is being run locally
     connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, (err) => {
       if (err) throw err;
