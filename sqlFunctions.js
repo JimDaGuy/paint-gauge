@@ -1,9 +1,13 @@
 const mysql = require('mysql');
+const bcrypt = require('bcrypt');
 const tabledata = require('./tabledata.js');
 
 let connection;
 let dbConnectionSettings;
+
 const databaseName = 'PaintGauge';
+// Used for bcrypt
+const saltRounds = 10;
 
 /*
 setConnectionSettings();
@@ -40,7 +44,7 @@ const setupTables = (tableArray) => {
     // Query the db to create the table
     connection.query(tableQuery, (err) => {
       if (err) throw err;
-      console.log(`Table created: ${table.name}`);
+      // console.log(`Table created: ${table.name}`);
     });
   });
 };
@@ -48,10 +52,8 @@ const setupTables = (tableArray) => {
 const setupDB = (isProduction) => {
   // In production, the database is already created, only need to create the tables
   if (isProduction) {
-    console.log(`Only creating tables because isProduction = ${isProduction}`);
     setupTables(tabledata.tables);
   } else {
-    console.log(`Setting up db because isProduction = ${isProduction}`);
     // Create database if the app is being run locally
     connection.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, (err) => {
       if (err) throw err;
@@ -74,7 +76,7 @@ const establishConnection = (isProduction) => {
   connection.connect((err) => {
     if (err) {
       console.log(`Error connecting to database: ${err}`);
-      // Wrapping timeout function to pass a parameter to establishConnection 
+      // Wrapping timeout function to pass a parameter to establishConnection
       setTimeout(() => { establishConnection(isProduction); }, 2000);
     }
 
@@ -82,7 +84,7 @@ const establishConnection = (isProduction) => {
   });
 
   connection.on('error', (err) => {
-    console.log(`Database error: ${err}`);
+    console.log(`Database disconnected: ${err}`);
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
       establishConnection(isProduction);
     } else {
@@ -92,21 +94,70 @@ const establishConnection = (isProduction) => {
 };
 
 // Adds a user to the user list
-const addUser = (req, res) => {
+// curl -i -X POST -H 'Content-Type: application/json' -d
+// '{"username": "default", "passwordHash": "defaultpassword", "email": "default@default.com"}'
+// localhost:5000/api/registerUser
+
+const registerUser = (req, res) => {
   const params = {
     username: req.body.username,
+    passwordHash: req.body.passwordHash,
     email: req.body.email,
   };
 
-  let addUserQuery = 'INSERT IGNORE INTO User (username, email, creationDate) ';
-  addUserQuery += `VALUES ('${params.username}', '${params.email}', NOW())`;
-
+  const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
   connection.connect(() => {
-    connection.query(addUserQuery, (err) => {
+    connection.query(findUserQuery, (err, userRows) => {
       if (err) throw err;
 
-      console.log(`User created: ${params.username}: ${params.email}`);
-      res.status(200).send(`User created: ${params.username}: ${params.email}`);
+      // Only create account if the username isn't in the db
+      if (userRows.length > 0) {
+        res.send(`Username: ${params.username} is taken. Try something else!`);
+      } else {
+        bcrypt.hash(params.passwordHash, saltRounds, (err2, hash) => {
+          if (err2) throw err2;
+
+          let addUserQuery = 'INSERT IGNORE INTO User (username, passwordHash, email, creationDate) ';
+          addUserQuery += `VALUES ('${params.username}', '${hash}', '${params.email}', NOW())`;
+
+          connection.connect(() => {
+            connection.query(addUserQuery, (err3) => {
+              if (err3) throw err3;
+
+              console.log(`User created: ${params.username}: ${params.email}`);
+              res.status(200).send(`User created: ${params.username}: ${params.email}`);
+            });
+          });
+        });
+      }
+    });
+  });
+};
+
+// Checks user db for username and uses bcrypt to check if the password hash matches
+const login = (req, res) => {
+  const params = {
+    username: req.body.username,
+    password: req.body.passwordHash,
+  };
+
+  const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
+  connection.connect(() => {
+    connection.query(findUserQuery, (err, userRows) => {
+      if (err) throw err;
+
+      // User found
+      if (userRows.length > 0) {
+        const user = userRows[0];
+        bcrypt.compare(params.password, user.passwordHash, (err3, same) => {
+          if (same) {
+            res.send('Authenticated!');
+          }
+        });
+      }
+
+      // User not found
+      res.send('Username or password is incorrect');
     });
   });
 };
@@ -134,6 +185,7 @@ const sendRating = (req, res) => {
 module.exports = {
   establishConnection,
   setConnectionSettings,
-  addUser,
+  registerUser,
+  login,
   sendRating,
 };

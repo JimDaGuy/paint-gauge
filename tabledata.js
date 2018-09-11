@@ -4,6 +4,7 @@ const userTable = {
   name: 'User',
   columns: {
     username: 'VARCHAR(64) UNIQUE NOT NULL PRIMARY KEY,',
+    passwordHash: 'CHAR(60) NOT NULL,',
     email: 'VARCHAR(320) NOT NULL,',
     creationDate: 'TIMESTAMP NOT NULL',
   },
