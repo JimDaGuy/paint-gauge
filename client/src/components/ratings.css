@@ -7,27 +7,29 @@
 }
 
 .ratingH1 {
-    color: black;
-    margin: 0;
+    color: white;
+    margin: 0 0 0 15px;
+    font-size: 18px;
+    text-align: left;
+    width: 75vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+.star {}
 
 /*Tablets*/
 @media screen and (min-width: 769px) and (max-width: 992px) {
-    .ratingBar {
-        width: 60%;
-    }
+   
 }
 
 /*Medium*/
 @media screen and (min-width: 993px) and (max-width: 1200px) {
-    .ratingBar {
-        width: 60%;
-    }
+    
 }
 
 /*Large*/
 @media screen and (min-width: 1201px) {
-    .ratingBar {
-        width: 40%;
-    }
+   
 }

@@ -135,29 +135,50 @@ const registerUser = (req, res) => {
 };
 
 // Checks user db for username and uses bcrypt to check if the password hash matches
-const login = (req, res) => {
+const verifyLogin = (username, password, callback) => {
   const params = {
-    username: req.body.username,
-    password: req.body.passwordHash,
+    username,
+    password,
+    callback,
   };
 
   const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
   connection.connect(() => {
     connection.query(findUserQuery, (err, userRows) => {
-      if (err) throw err;
+      if (err) return callback(err);
 
       // User found
       if (userRows.length > 0) {
         const user = userRows[0];
         bcrypt.compare(params.password, user.passwordHash, (err3, same) => {
           if (same) {
-            res.send('Authenticated!');
+            console.log('Should be authenticated');
+            return callback(null, user);
           }
+          console.log('Should be not authenticated');
+          return callback(null, false);
         });
+      } else {
+        // User not found
+        console.log('Should be not found');
+        return callback(null, false);
       }
+    });
+  });
+};
 
-      // User not found
-      res.send('Username or password is incorrect');
+const findUserById = (id, callback) => {
+  const findUserQuery = `SELECT * FROM User WHERE userID = ${id}`;
+  connection.connect(() => {
+    connection.query(findUserQuery, (err, userRows) => {
+      if (err) callback(err);
+
+      if (userRows.length > 0) {
+        const user = userRows[0];
+        callback(null, user);
+      } else {
+        callback(new Error(`User ${id} does not exist`));
+      }
     });
   });
 };
@@ -169,7 +190,7 @@ const sendRating = (req, res) => {
     user: req.body.user,
   };
 
-  let sendRatingQuery = 'INSERT IGNORE INTO Rating (paintingID, creationDate, rating, user) ';
+  let sendRatingQuery = 'INSERT IGNORE INTO Rating (paintingID, creationDate, rating, userID) ';
   sendRatingQuery += `VALUES ('${params.paintingID}', NOW(), '${params.rating}', '${params.user}')`;
 
   connection.connect(() => {
@@ -186,6 +207,7 @@ module.exports = {
   establishConnection,
   setConnectionSettings,
   registerUser,
-  login,
+  verifyLogin,
+  findUserById,
   sendRating,
 };

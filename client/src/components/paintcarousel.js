@@ -54,7 +54,9 @@ class PaintCarousel extends Component {
 
         return (
             <div>
-                <img id="ci" className="carouselImage" src={imageSrc} alt={artName} onLoad={unlockRating}/>
+                <div className="carouselContainer">
+                  <img id="ci" className="carouselImage" src={imageSrc} alt={artName} onLoad={unlockRating}/>
+                </div>
             </div>
         )
     }

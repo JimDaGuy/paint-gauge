@@ -1,4 +1,8 @@
+.carouselContainer {
+  height: 65vh;
+}
+
 .carouselImage {
-    max-width: 450px;
-    max-height: 450px;
+    height: 95%;
+    margin: 2.5% auto;
 }
