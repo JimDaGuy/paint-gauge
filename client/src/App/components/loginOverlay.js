@@ -35,7 +35,7 @@ class LoginOverlay extends Component {
               <span>Don't have an account?</span><br/>
               <span onClick={createAccount} id="createAccountText">Create Account</span>
             </fieldset>
-            <div className="loginResponseBox">{this.state.loginResponse ? this.state.loginResponse : ''}</div>
+            <div className="loginResponseBox">{this.state.loginResponse}</div>
           </form>
         </div>
       </div>
@@ -49,15 +49,18 @@ class LoginOverlay extends Component {
     })
     .then((response) => {
       console.dir(response);
-      this.setState({loginResponse: response});
+      this.setState({loginResponse: response.data.message});
+      console.dir(response.state.loginResponse);
+      console.dir(this.state.loginResponse);
 
       if (response.status === 200) {
-        console.dir(this.props);
         this.props.exitLogin();
       }
     })
     .catch((err) => {
-      console.dir(err);
+      if (err.response) {
+        console.dir(err.response.data.message);
+      }
     });
     /*
     const response = fetch('/api/login', {

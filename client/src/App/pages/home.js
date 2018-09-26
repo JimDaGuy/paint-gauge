@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-
 import Header from '../components/header.js'
 import PaintCarousel from '../components/paintcarousel.js'
 import Ratings from '../components/ratings.js'
@@ -15,6 +13,7 @@ class Home extends Component {
     username: 'default',
     locked: true,
     loggingIn: false,
+    creatingAccount: false,
   };
 
   componentDidMount() {

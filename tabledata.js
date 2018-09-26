@@ -5,7 +5,7 @@ const userTable = {
   columns: {
     username: 'VARCHAR(64) UNIQUE NOT NULL,',
     passwordHash: 'CHAR(60) NOT NULL,',
-    email: 'VARCHAR(320) UNIQUE NOT NULL,',
+    email: 'VARCHAR(255) UNIQUE NOT NULL,',
     creationDate: 'TIMESTAMP NOT NULL,',
     userID: 'INT NOT NULL AUTO_INCREMENT,',
     'PRIMARY KEY': '(userID)',
