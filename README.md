@@ -11,12 +11,19 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
 - [-] Setup linting with eslint-airbnb-config (Linting setup with Node code, not React yet)
 - [x] Setup database for saving ratings
 - [x] Implement API routes for saving ratings to the DB
-- [ ] Restructure components to follow React best practices
+- [x] Implement React-router with page-style components
 - [ ] Re-style main rating page
-- [ ] Implement some sort of Auth and tie ratings to a user_id
-- [ ] Implement API routes for grabbing analtyics/other rating data
+- [ ] Create CSS-theme for the application and use it for my pages
+- [] Implement authentication
+  - [x] API route for registering users (Salt, Hash, and Store passwords)
+  - [ ] Client page for registering users
+  - [x] API route for logging in and returning JSON Web Tokens (JWT) upon success
+  - [-] Client page for logging in (Half-done)
+  - [ ] Store JWT client-side and use them for requests
+  - [ ] Modify API routes to use JWT if one is provided
+  - [ ] Customize client pages based on authentication status
+- [ ] Implement pages and API routes for grabbing analtyics/other rating data
 - [ ] Implement API routes for non-200 responses
-- [ ] Implement pages for displaying rating information
 - [ ] Implement better error handling to prevent the application from crashing 
 - [ ] Implement unit testing
 
@@ -29,6 +36,8 @@ You can get an API key here: https://www.harvardartmuseums.org/collections/api
 Running Paint Gauge locally requires a localvars.js file that I've left out of the public repository. 
 You need to make your own and place it in the root directory.
 
+Make sure to replace the fields with your own credentials and make up your own secret for JWT_SECRET.
+
 localvars.js
 ```javascript
   const HARVARD_KEY = 'Put your Harvard Museum API key here';
@@ -39,5 +48,7 @@ localvars.js
     password: 'Password for local DB',
   };
 
-  module.exports = { HARVARD_KEY, MYSQL_CREDS };
+const JWT_SECRET = 'Keyboard cat';
+
+  module.exports = { HARVARD_KEY, MYSQL_CREDS, JWT_SECRET };
 ```
