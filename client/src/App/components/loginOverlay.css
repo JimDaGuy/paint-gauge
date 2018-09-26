@@ -1,0 +1,43 @@
+.loginOverlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 100000;
+  background-color: gray;
+  opacity: .70;
+}
+
+.credentialsBox {
+  padding: 10px;
+  margin: 0;
+  width: 30%;
+  height: 40%;
+  position: absolute;
+  top: 30%;
+  left: 35%;
+  z-index: 100010;
+  opacity: 1 !important;  
+  background-color: lightgreen;
+}
+
+.credentialsForm {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.credentialsFieldset {
+  padding: 0 !important;
+  margin: 0;
+  background-color: lightseagreen;
+  height: 100%;
+}
+
+#createAccountText {
+  color: blue;
+}
+
+#createAccountText:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}

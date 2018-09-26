@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/header.js'
 import PaintCarousel from '../components/paintcarousel.js'
 import Ratings from '../components/ratings.js'
+import LoginOverlay from '../components/loginOverlay.js';
 
 class Home extends Component {
   state = {
@@ -12,7 +13,8 @@ class Home extends Component {
     id: '',
     loggedIn: false,
     username: 'default',
-    locked: true
+    locked: true,
+    loggingIn: false,
   };
 
   componentDidMount() {
@@ -28,8 +30,9 @@ class Home extends Component {
   };
 
   getPainting = async () => {
-    const response = await fetch('/api/getRandomPainting');
     
+    const response = await fetch('/api/getRandomPainting');
+
     const body = await response.json().catch(console.log(response))
       .then(this.ratingComponent.resetStars());
 
@@ -86,10 +89,19 @@ class Home extends Component {
     this.setState({ locked: false });
   }
 
+  openLogin = () => {
+    this.setState({ loggingIn: true });
+  }
+
+  closeLogin = () => {
+    this.setState({ loggingIn: false });
+  }
+
   render() {
     return (
       <div className="App">
-        <Header loggedIn={this.state.loggedIn} username={this.state.username}/>
+        {this.state.loggingIn ? <LoginOverlay exitLogin={this.closeLogin} /> : ''}
+        <Header loggedIn={this.state.loggedIn} username={this.state.username} openLogin={this.openLogin}/>
         <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} unlockRating={this.unlockRating} />
         <Ratings ref={instance => { this.ratingComponent = instance; }} artName={this.state.artName} sendRating={this.sendRating} />
       </div>

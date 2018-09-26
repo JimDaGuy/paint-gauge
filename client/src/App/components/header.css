@@ -17,6 +17,15 @@
   text-align: right;
 }
 
+#signInText {
+  color: blue;
+}
+
+#signInText:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /*Tablets*/
 @media screen and (min-width: 769px) and (max-width: 992px) {
    

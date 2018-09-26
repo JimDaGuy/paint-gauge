@@ -111,6 +111,11 @@ const checkToken = (token, callback) => {
 };
 
 const authCB = (req, res, user, isAuthenticated) => {
+  if (!user) {
+    res.status(404).send({ message: 'User not found' });
+    return;
+  }
+
   const userData = {
     username: user.username,
     email: user.email,
