@@ -1,9 +1,15 @@
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const tabledata = require('./tabledata.js');
 
 let connection;
 let dbConnectionSettings;
+
+const isProduction = process.env.NODE_ENV === 'production';
+const localvars = isProduction ? {} : require('./localvars.js');
+
+const jwtSecret = isProduction ? process.env.JWT_SECRET : localvars.JWT_SECRET;
 
 const databaseName = 'PaintGauge';
 // Used for bcrypt
@@ -15,7 +21,7 @@ establishConnection();
 addUser/sendRating/etc.
 */
 
-const setConnectionSettings = (isProduction, localvars) => {
+const setConnectionSettings = () => {
   if (isProduction) {
     dbConnectionSettings = process.env.CLEARDB_DATABASE_URL;
   } else {
@@ -49,7 +55,7 @@ const setupTables = (tableArray) => {
   });
 };
 
-const setupDB = (isProduction) => {
+const setupDB = () => {
   // In production, the database is already created, only need to create the tables
   if (isProduction) {
     setupTables(tabledata.tables);
@@ -70,27 +76,59 @@ const setupDB = (isProduction) => {
 
 // Function to create the mysql connection and re-establish it if the connection is killed off
 // Based off of stack overflow solution - https://stackoverflow.com/questions/20210522/nodejs-mysql-error-connection-lost-the-server-closed-the-connection
-const establishConnection = (isProduction) => {
+const establishConnection = () => {
   connection = mysql.createConnection(dbConnectionSettings);
 
   connection.connect((err) => {
     if (err) {
       console.log(`Error connecting to database: ${err}`);
       // Wrapping timeout function to pass a parameter to establishConnection
-      setTimeout(() => { establishConnection(isProduction); }, 2000);
+      setTimeout(() => { establishConnection(); }, 2000);
     }
 
-    setupDB(isProduction);
+    setupDB();
   });
 
   connection.on('error', (err) => {
     console.log(`Database disconnected: ${err}`);
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-      establishConnection(isProduction);
+      establishConnection();
     } else {
       throw err;
     }
   });
+};
+
+// Check token run given callback with decoded information on success
+const checkToken = (token, callback) => {
+  jwt.verify(token, jwtSecret, (err, decoded) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, decoded);
+    }
+  });
+};
+
+const authCB = (req, res, user, isAuthenticated) => {
+  const userData = {
+    username: user.username,
+    email: user.email,
+    creationDate: user.creationDate,
+  };
+
+  // If the user is authenticated - generate JWT and send it back
+  if (isAuthenticated) {
+    jwt.sign(userData, jwtSecret, { expiresIn: '1s' }, (err, token) => {
+      if (err) throw err;
+
+      // console.log(token);
+      res.status(200).send({ message: 'User succesfully signed in', token });
+    });
+  } else {
+    // User is not authenticated
+    res.status(401).send({ message: 'Username or password is incorrect' });
+  }
 };
 
 // Adds a user to the user list
@@ -135,17 +173,16 @@ const registerUser = (req, res) => {
 };
 
 // Checks user db for username and uses bcrypt to check if the password hash matches
-const verifyLogin = (username, password, callback) => {
+const verifyLogin = (req, res) => {
   const params = {
-    username,
-    password,
-    callback,
+    username: req.body.username,
+    password: req.body.password,
   };
 
   const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
   connection.connect(() => {
     connection.query(findUserQuery, (err, userRows) => {
-      if (err) return callback(err);
+      if (err) throw err;
 
       // User found
       if (userRows.length > 0) {
@@ -153,31 +190,16 @@ const verifyLogin = (username, password, callback) => {
         bcrypt.compare(params.password, user.passwordHash, (err3, same) => {
           if (same) {
             console.log('Should be authenticated');
-            return callback(null, user);
+            authCB(req, res, user, true);
+          } else {
+            console.log('Should be not authenticated');
+            authCB(req, res, user, false);
           }
-          console.log('Should be not authenticated');
-          return callback(null, false);
         });
       } else {
         // User not found
         console.log('Should be not found');
-        return callback(null, false);
-      }
-    });
-  });
-};
-
-const findUserById = (id, callback) => {
-  const findUserQuery = `SELECT * FROM User WHERE userID = ${id}`;
-  connection.connect(() => {
-    connection.query(findUserQuery, (err, userRows) => {
-      if (err) callback(err);
-
-      if (userRows.length > 0) {
-        const user = userRows[0];
-        callback(null, user);
-      } else {
-        callback(new Error(`User ${id} does not exist`));
+        authCB(req, res, null, false);
       }
     });
   });
@@ -203,11 +225,32 @@ const sendRating = (req, res) => {
   });
 };
 
+// Test function to be removed in prod
+const test = (req, res) => {
+  checkToken(req.body.token, (err, decoded) => {
+    if (err) {
+      switch (err.name) {
+        case 'TokenExpiredError':
+          res.status(401).send({ message: 'Login has expired. Please login again' });
+          break;
+        default:
+          break;
+      }
+      return;
+    }
+
+    // If checkToken returns valid decode value, perform request with it
+    if (decoded) {
+      console.dir(decoded.username);
+    }
+  });
+};
+
 module.exports = {
   establishConnection,
   setConnectionSettings,
   registerUser,
   verifyLogin,
-  findUserById,
   sendRating,
+  test,
 };

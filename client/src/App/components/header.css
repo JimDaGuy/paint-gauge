@@ -12,6 +12,11 @@
     text-align: left;
 }
 
+.signInSection {
+  margin: 0 10px 2px 0; 
+  text-align: right;
+}
+
 /*Tablets*/
 @media screen and (min-width: 769px) and (max-width: 992px) {
    

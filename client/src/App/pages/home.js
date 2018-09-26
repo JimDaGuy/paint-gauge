@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
-import Header from './components/header.js'
-import PaintCarousel from './components/paintcarousel.js'
-import Ratings from './components/ratings.js'
-import './App.css';
+import { Link } from 'react-router-dom';
 
-class App extends Component {
+import Header from '../components/header.js'
+import PaintCarousel from '../components/paintcarousel.js'
+import Ratings from '../components/ratings.js'
+
+class Home extends Component {
   state = {
     imageSrc: '',
     artName: '',
     id: '',
+    loggedIn: false,
+    username: 'default',
     locked: true
   };
 
   componentDidMount() {
-    this.callApi()
+    this.getPainting()
       .then(res => this.setState({
         imageSrc: res.primaryimageurl + '?width=450',
         artName: res.title,
@@ -24,7 +27,7 @@ class App extends Component {
       });
   };
 
-  callApi = async () => {
+  getPainting = async () => {
     const response = await fetch('/api/getRandomPainting');
     
     const body = await response.json().catch(console.log(response))
@@ -67,7 +70,7 @@ class App extends Component {
   }
 
   getNewPainting = () => {
-    this.callApi()
+    this.getPainting()
       //Set the state with results from the API and unlock the rating component
       .then(res => this.setState({
         imageSrc: res.primaryimageurl + '?width=450',
@@ -86,12 +89,12 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Header />
+        <Header loggedIn={this.state.loggedIn} username={this.state.username}/>
         <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} unlockRating={this.unlockRating} />
         <Ratings ref={instance => { this.ratingComponent = instance; }} artName={this.state.artName} sendRating={this.sendRating} />
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default Home;
