@@ -14,7 +14,7 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
 - [x] Implement React-router with page-style components
 - [ ] Re-style main rating page
 - [ ] Create CSS-theme for the application and use it for my pages
-- [] Implement authentication
+- [ ] Implement authentication
   - [x] API route for registering users (Salt, Hash, and Store passwords)
   - [ ] Client page for registering users
   - [x] API route for logging in and returning JSON Web Tokens (JWT) upon success
