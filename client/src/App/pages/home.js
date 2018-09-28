@@ -3,25 +3,34 @@ import Header from '../components/header.js'
 import PaintCarousel from '../components/paintcarousel.js'
 import Ratings from '../components/ratings.js'
 import LoginOverlay from '../components/loginOverlay.js';
+import CreateAccountOverlay from '../components/createAccountOverlay.js';
 
 class Home extends Component {
   state = {
     imageSrc: '',
     artName: '',
-    id: '',
-    loggedIn: false,
-    username: 'default',
+    paintingID: '',
     locked: true,
     loggingIn: false,
     creatingAccount: false,
+    loggedIn: false,
+    expired: false,
+    username: 'default',
+    userID: '',
   };
 
   componentDidMount() {
+    // Set state based on localstorage
+    // loggedIn
+    // expired
+    // username
+    // userID
+
     this.getPainting()
       .then(res => this.setState({
         imageSrc: res.primaryimageurl + '?width=450',
         artName: res.title,
-        id: res.id
+        paintingID: res.id
       }))
       .catch(err => {
         throw err;
@@ -62,7 +71,7 @@ class Home extends Component {
       },
       body: JSON.stringify({
         rating: ratingNum,
-        paintingID: this.state.id,
+        paintingID: this.state.paintingID,
         user: 'default'
       })
     });
@@ -77,7 +86,7 @@ class Home extends Component {
       .then(res => this.setState({
         imageSrc: res.primaryimageurl + '?width=450',
         artName: res.title,
-        id: res.id
+        paintingID: res.id
       }))
       .catch(err => {
         throw err;
@@ -89,17 +98,33 @@ class Home extends Component {
   }
 
   openLogin = () => {
-    this.setState({ loggingIn: true });
+    this.setState({ loggingIn: true, creatingAccount: false });
   }
 
-  closeLogin = () => {
-    this.setState({ loggingIn: false });
+  openCreateAccount = () => {
+    this.setState({ loggingIn: false, creatingAccount: true });
+  }
+
+  closeOverlays = () => {
+    this.setState({ loggingIn: false, creatingAccount: false });
+  }
+
+  signOut = () => {
+    // Set loggedIn state to false and username to default
+    this.setState({ loggedIn: false, username: 'default' });
+    // Remove token from local storage
+    localStorage.removeItem('jwToken');
+  }
+
+  setLoginStates = (username, userID) => {
+    this.setState({ loggedIn: true, expired: false, username, userID })
   }
 
   render() {
     return (
       <div className="App">
-        {this.state.loggingIn ? <LoginOverlay exitLogin={this.closeLogin} /> : ''}
+        {this.state.loggingIn ? <LoginOverlay exitLogin={this.closeOverlays} openCreateOverlay={this.openCreateAccount} setLoginStates={this.setLoginStates}/> : ''}
+        {this.state.creatingAccount ? <CreateAccountOverlay exitCreate={this.closeOverlays} openLoginOverlay={this.openLogin}/> : ''}
         <Header loggedIn={this.state.loggedIn} username={this.state.username} openLogin={this.openLogin}/>
         <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} unlockRating={this.unlockRating} />
         <Ratings ref={instance => { this.ratingComponent = instance; }} artName={this.state.artName} sendRating={this.sendRating} />

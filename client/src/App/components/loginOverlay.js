@@ -9,31 +9,31 @@ class LoginOverlay extends Component {
   }
 
   updateUsernameInput = (e) => {
-    this.setState({usernameInput: e.target.value});
+    this.setState({ usernameInput: e.target.value });
   }
 
   updatePasswordInput = (e) => {
-    this.setState({passwordInput: e.target.value});
+    this.setState({ passwordInput: e.target.value });
   }
 
   render() {
-    const { exitLogin, createAccount } = this.props;
+    const { exitLogin, openCreateOverlay } = this.props;
 
     return (
       <div>
         <div className="loginOverlay" onClick={exitLogin}></div>
-        <div className="credentialsBox">
-          <form className="credentialsForm">
-            <fieldset className="credentialsFieldset">
+        <div className="loginCredentialsBox">
+          <form className="loginCredentialsForm">
+            <fieldset className="loginCredentialsFieldset">
               <legend>Sign In to Paint Gauge</legend>
               Username:<br />
-              <input type="text" name="username" id="usernameInput" onChange={this.updateUsernameInput} /><br />
+              <input type="text" placeholder="username" id="usernameInput" onChange={this.updateUsernameInput} /><br />
               Password:<br />
-              <input type="password" name="password" id="passwordInput" onChange={this.updatePasswordInput} /><br />
+              <input type="password" placeholder="password" id="passwordInput" onChange={this.updatePasswordInput} /><br />
               <br />
               <button type="button" id="submitButton" onClick={this.attemptSignIn}>Sign In</button><br />
-              <span>Don't have an account?</span><br/>
-              <span onClick={createAccount} id="createAccountText">Create Account</span>
+              <span>Don't have an account?</span><br />
+              <span onClick={openCreateOverlay} id="createAccountText">Create Account</span>
             </fieldset>
             <div className="loginResponseBox">{this.state.loginResponse}</div>
           </form>
@@ -44,53 +44,35 @@ class LoginOverlay extends Component {
 
   attemptSignIn = () => {
     axios.post('/api/login', {
-      username: this.state.usernameInput, 
+      username: this.state.usernameInput,
       password: this.state.passwordInput
     })
-    .then((response) => {
-      console.dir(response);
-      this.setState({loginResponse: response.data.message});
-      console.dir(response.state.loginResponse);
-      console.dir(this.state.loginResponse);
+      .then((response) => {
+        console.dir(response);
+        this.setState({ loginResponse: response.data.message });
 
-      if (response.status === 200) {
-        this.props.exitLogin();
-      }
-    })
-    .catch((err) => {
-      if (err.response) {
-        console.dir(err.response.data.message);
-      }
-    });
-    /*
-    const response = fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username, password: this.state,
+        if (response.status === 200) {
+          // Set token in localStorage
+          const token = response.data.token;
+          localStorage.setItem('jwToken', token);
+
+          this.props.setLoginStates(response.data.username, response.data.userID);
+          this.props.exitLogin();
+        }
       })
-    });
-
-    const body = await response.json().catch(console.log(response))
-      .then(this.ratingComponent.resetStars());
-
-    if (response.status !== 200)
-      throw Error(body.message);
-
-    this.setState({response});
-    */
+      .catch((err) => {
+        if (err.response) {
+          console.dir(err.response.data.message);
+          this.setState({ loginResponse: err.response.data.message });
+        }
+      });
   }
 }
 
-
-
 LoginOverlay.propTypes = {
   exitLogin: PropTypes.func,
-  createAccount: PropTypes.func,
-  visible: PropTypes.bool
+  openCreateOverlay: PropTypes.func,
+  setLoginStates: PropTypes.func
 };
 
 export default LoginOverlay;

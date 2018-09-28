@@ -12,7 +12,7 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
 - [x] Setup database for saving ratings
 - [x] Implement API routes for saving ratings to the DB
 - [x] Implement React-router with page-style components
-- [ ] Re-style main rating page
+- [ ] Re-style all client pages
 - [ ] Create CSS-theme for the application and use it for my pages
 - [ ] Implement authentication
   - [x] API route for registering users (Salt, Hash, and Store passwords)
@@ -22,10 +22,11 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
   - [ ] Store JWT client-side and use them for requests
   - [ ] Modify API routes to use JWT if one is provided
   - [ ] Customize client pages based on authentication status
-- [ ] Implement pages and API routes for grabbing analtyics/other rating data
 - [ ] Implement API routes for non-200 responses
-- [ ] Implement better error handling to prevent the application from crashing 
+- [ ] Implement input checking on the client-side for account creation and login
 - [ ] Implement unit testing
+- [ ] Implement pages and API routes for grabbing analtyics/other rating data
+- [ ] Implement better error handling to prevent the application from crashing 
 
 ## Running it yourself
 
@@ -48,7 +49,7 @@ localvars.js
     password: 'Password for local DB',
   };
 
-const JWT_SECRET = 'Keyboard cat';
+  const JWT_SECRET = 'Keyboard cat';
 
   module.exports = { HARVARD_KEY, MYSQL_CREDS, JWT_SECRET };
 ```

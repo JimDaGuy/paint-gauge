@@ -116,10 +116,12 @@ const authCB = (req, res, user, isAuthenticated) => {
     return;
   }
 
+  // Data signed with JSON Web Token - when the JWT is decoded the request can use this info
   const userData = {
     username: user.username,
     email: user.email,
     creationDate: user.creationDate,
+    userID: user.userID,
   };
 
   // If the user is authenticated - generate JWT and send it back
@@ -128,7 +130,12 @@ const authCB = (req, res, user, isAuthenticated) => {
       if (err) throw err;
 
       // console.log(token);
-      res.status(200).send({ message: 'User succesfully signed in', token });
+      res.status(200).send({
+        message: 'User succesfully signed in',
+        token,
+        username: user.username,
+        userID: user.userID,
+      });
     });
   } else {
     // User is not authenticated
@@ -141,10 +148,11 @@ const authCB = (req, res, user, isAuthenticated) => {
 // '{"username": "default", "passwordHash": "defaultpassword", "email": "default@default.com"}'
 // localhost:5000/api/registerUser
 
+// Rewrite to make unique username and email neccesary
 const registerUser = (req, res) => {
   const params = {
     username: req.body.username,
-    passwordHash: req.body.passwordHash,
+    password: req.body.password,
     email: req.body.email,
   };
 
@@ -155,9 +163,10 @@ const registerUser = (req, res) => {
 
       // Only create account if the username isn't in the db
       if (userRows.length > 0) {
-        res.send(`Username: ${params.username} is taken. Try something else!`);
+        // Username take, 409 - conflict
+        res.status(409).send({ message: `Username: ${params.username} is taken. Try something else!` });
       } else {
-        bcrypt.hash(params.passwordHash, saltRounds, (err2, hash) => {
+        bcrypt.hash(params.password, saltRounds, (err2, hash) => {
           if (err2) throw err2;
 
           let addUserQuery = 'INSERT IGNORE INTO User (username, passwordHash, email, creationDate) ';
@@ -168,7 +177,7 @@ const registerUser = (req, res) => {
               if (err3) throw err3;
 
               console.log(`User created: ${params.username}: ${params.email}`);
-              res.status(200).send(`User created: ${params.username}: ${params.email}`);
+              res.status(200).send({ message: `User created: ${params.username}: ${params.email}` });
             });
           });
         });
