@@ -126,7 +126,7 @@ const authCB = (req, res, user, isAuthenticated) => {
 
   // If the user is authenticated - generate JWT and send it back
   if (isAuthenticated) {
-    jwt.sign(userData, jwtSecret, { expiresIn: '1m' }, (err, token) => {
+    jwt.sign(userData, jwtSecret, { expiresIn: '15m' }, (err, token) => {
       if (err) throw err;
 
       // console.log(token);
