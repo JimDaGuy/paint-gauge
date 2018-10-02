@@ -52,11 +52,7 @@ class LoginOverlay extends Component {
         this.setState({ loginResponse: response.data.message });
 
         if (response.status === 200) {
-          // Set token in localStorage
-          const token = response.data.token;
-          localStorage.setItem('jwToken', token);
-
-          this.props.setLoginStates(response.data.username, response.data.userID);
+          this.props.setLoginStates(response.data.username, response.data.token);
           this.props.exitLogin();
         }
       })

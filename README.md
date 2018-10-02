@@ -19,9 +19,12 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
   - [x] Client page for registering users
   - [x] API route for logging in and returning JSON Web Tokens (JWT) upon success
   - [x] Client page for logging in
-  - [ ] Store JWT client-side and use them for requests
-  - [ ] Modify API routes to use JWT if one is provided
-  - [ ] Customize client pages based on authentication status
+  - [x] Store JWT client-side and use them for requests
+  - [x] Modify API routes to use JWT if one is provided
+  - [x] Customize client pages based on authentication status
+  - [ ] Implement confirmation dialog for sign-out
+  - [ ] Implement dialog for re-authentication on token expiration
+  - [ ] Implement success notifications for successful login and account creation
 - [ ] Implement API routes for non-200 responses
 - [ ] Implement input checking on the client-side for account creation and login
 - [ ] Implement unit testing

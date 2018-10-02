@@ -16,7 +16,6 @@ class Home extends Component {
     loggedIn: false,
     expired: false,
     username: 'default',
-    userID: '',
   };
 
   componentDidMount() {
@@ -24,7 +23,6 @@ class Home extends Component {
     const loggedIn = localStorage.getItem('loggedIn');
     const expired = localStorage.getItem('expired');
     const username = localStorage.getItem('username');
-    const userID = localStorage.getItem('userID');
 
     if (loggedIn === 'true') {
       this.setState({ loggedIn: true });
@@ -33,7 +31,7 @@ class Home extends Component {
         this.setState({ expired: true });
       }
 
-      this.setState({ username, userID });
+      this.setState({ username });
     }
 
     this.getPainting()
@@ -63,7 +61,7 @@ class Home extends Component {
   //Send a rating for the current painting and grab a new painting
   sendRating = async (ratingNum) => {
     //Don't send a rating if the component is locked
-    if (this.state.locked)
+    if (this.state.locked || this.state.expired)
       return;
 
     //Highlight stars in the rating component
@@ -82,12 +80,27 @@ class Home extends Component {
       body: JSON.stringify({
         rating: ratingNum,
         paintingID: this.state.paintingID,
-        user: 'default'
+        token: localStorage.getItem('jwToken')
       })
+    }).then((response) => {
+      // Token invalid or expired 
+      if (response.status === 401) {
+        console.dir(response);
+        // Set state to expired
+        this.setState({ expired: true });
+        localStorage.setItem('expired', true);
+        // Display window for user to re-authenticate
+        
+        return;
+      }
+      //Get a new painting to display after sending out a rating
+      this.getNewPainting();
+    }).catch((err) => {
+      console.dir(err);
+      
     });
 
-    //Get a new painting to display after sending out a rating
-    this.getNewPainting();
+
   }
 
   getNewPainting = () => {
@@ -121,22 +134,21 @@ class Home extends Component {
 
   signOut = () => {
     // Set loggedIn state to false and username to default
-    this.setState({ loggedIn: false, username: 'default', expired: false, userID: 1 });
+    this.setState({ loggedIn: false, username: 'default', expired: false, token: '' });
     // Clear localstorage on logout
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('expired');
     localStorage.removeItem('username');
-    localStorage.removeItem('userID');
     localStorage.removeItem('jwToken');
   }
 
-  setLoginStates = (username, userID) => {
-    this.setState({ loggedIn: true, expired: false, username, userID });
+  setLoginStates = (username, token) => {
+    this.setState({ loggedIn: true, expired: false, username, token });
     // Store info in localStorage
+    localStorage.setItem('jwToken', token);
     localStorage.setItem('loggedIn', true);
     localStorage.setItem('expired', false);
     localStorage.setItem('username', username);
-    localStorage.setItem('userID', userID);
   }
 
   render() {

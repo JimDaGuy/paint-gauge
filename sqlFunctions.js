@@ -126,7 +126,7 @@ const authCB = (req, res, user, isAuthenticated) => {
 
   // If the user is authenticated - generate JWT and send it back
   if (isAuthenticated) {
-    jwt.sign(userData, jwtSecret, { expiresIn: '1s' }, (err, token) => {
+    jwt.sign(userData, jwtSecret, { expiresIn: '1m' }, (err, token) => {
       if (err) throw err;
 
       // console.log(token);
@@ -156,9 +156,8 @@ const registerUser = (req, res) => {
     email: req.body.email,
   };
 
-  const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
   connection.connect(() => {
-    connection.query(findUserQuery, (err, userRows) => {
+    connection.query('SELECT * FROM User WHERE ?', [{ username: params.username }], (err, userRows) => {
       if (err) throw err;
 
       // Only create account if the username isn't in the db
@@ -169,11 +168,15 @@ const registerUser = (req, res) => {
         bcrypt.hash(params.password, saltRounds, (err2, hash) => {
           if (err2) throw err2;
 
-          let addUserQuery = 'INSERT IGNORE INTO User (username, passwordHash, email, creationDate) ';
-          addUserQuery += `VALUES ('${params.username}', '${hash}', '${params.email}', NOW())`;
+          const newUser = {
+            username: params.username,
+            passwordHash: hash,
+            email: params.email,
+            creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          };
 
           connection.connect(() => {
-            connection.query(addUserQuery, (err3) => {
+            connection.query('INSERT IGNORE INTO User ?', [newUser], (err3) => {
               if (err3) throw err3;
 
               console.log(`User created: ${params.username}: ${params.email}`);
@@ -193,9 +196,8 @@ const verifyLogin = (req, res) => {
     password: req.body.password,
   };
 
-  const findUserQuery = `SELECT * FROM User WHERE username = '${params.username}'`;
   connection.connect(() => {
-    connection.query(findUserQuery, (err, userRows) => {
+    connection.query('SELECT * FROM User WHERE ?', [{ username: params.username }], (err, userRows) => {
       if (err) throw err;
 
       // User found
@@ -223,18 +225,62 @@ const sendRating = (req, res) => {
   const params = {
     paintingID: req.body.paintingID,
     rating: req.body.rating,
-    user: req.body.user,
+    token: req.body.token,
   };
 
-  let sendRatingQuery = 'INSERT IGNORE INTO Rating (paintingID, creationDate, rating, userID) ';
-  sendRatingQuery += `VALUES ('${params.paintingID}', NOW(), '${params.rating}', '${params.user}')`;
-
+  // Connect to the databse
   connection.connect(() => {
-    connection.query(sendRatingQuery, (err) => {
-      if (err) throw err;
+    // Send a nonAuthenticated rating if the user didn't send a token
+    if (!params.token) {
+      const nonUserRating = {
+        paintingID: params.paintingID,
+        creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        rating: params.rating,
+        userID: 1,
+      };
 
-      console.log(`Sending rating: ${params.rating} stars for ${params.paintingID} by ${params.user}`);
-      res.status(200).send(`Sending rating: ${params.rating} stars for ${params.paintingID} by ${params.user}`);
+      connection.query('INSERT IGNORE INTO Rating SET ?', [nonUserRating], (err) => {
+        if (err) {
+          res.status(400).send(`Issue sending rating: ${err}`);
+        }
+
+        console.log(`Sending rating: ${nonUserRating.rating} stars for ${nonUserRating.paintingID} by userID: ${nonUserRating.userID}`);
+        res.status(200).send(`Sending rating: ${nonUserRating.rating} stars for ${nonUserRating.paintingID} by userID: ${nonUserRating.userID}`);
+      });
+      return;
+    }
+
+    // Check if the user's token is valid, perform request based on results
+    checkToken(params.token, (err, decoded) => {
+      if (err) {
+        switch (err.name) {
+          case 'TokenExpiredError':
+            res.status(401).send({ message: 'Login has expired. Please login again' });
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+
+      // If checkToken returns valid decode value, perform request with it
+      if (decoded) {
+        const authedRating = {
+          paintingID: params.paintingID,
+          creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          rating: params.rating,
+          userID: decoded.userID,
+        };
+
+        connection.query('INSERT IGNORE INTO Rating SET ?', [authedRating], (err2) => {
+          if (err2) {
+            res.status(400).send(`Issue sending rating: ${err2}`);
+          }
+
+          console.log(`Sending rating: ${authedRating.rating} stars for ${authedRating.paintingID} by userID: ${authedRating.userID}`);
+          res.status(200).send(`Sending rating: ${authedRating.rating} stars for ${authedRating.paintingID} by userID: ${authedRating.userID}`);
+        });
+      }
     });
   });
 };
