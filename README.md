@@ -16,9 +16,9 @@ Paint Gauge is still very much a work in progress. It is currently hosted on Her
 - [ ] Create CSS-theme for the application and use it for my pages
 - [ ] Implement authentication
   - [x] API route for registering users (Salt, Hash, and Store passwords)
-  - [ ] Client page for registering users
+  - [x] Client page for registering users
   - [x] API route for logging in and returning JSON Web Tokens (JWT) upon success
-  - [-] Client page for logging in (Half-done)
+  - [x] Client page for logging in
   - [ ] Store JWT client-side and use them for requests
   - [ ] Modify API routes to use JWT if one is provided
   - [ ] Customize client pages based on authentication status

@@ -4,19 +4,19 @@ import PropTypes from 'prop-types';
 
 class Header extends Component {
   render() {
-    const { loggedIn, username, openLogin } = this.props;
+    const { loggedIn, username, openLogin, signOut } = this.props;
 
     const signInDiv = (
       <div className="signInSection">
         <span>Continue as Guest or </span>
-        <span onClick={openLogin} id="signInText">Sign In</span>
+        <span onClick={openLogin} className="fakeLinkText">Sign In</span>
       </div>
     );
 
     const signedInDiv = (
       <div className="profileDivSection">
         <span>Signed in as {username} </span>
-        <a href="/logout">Sign Out</a>
+        <span onClick={signOut}  className="fakeLinkText">Sign Out</span>
       </div>
     );
 
@@ -32,7 +32,8 @@ class Header extends Component {
 Header.propTypes = {
   loggedIn: PropTypes.bool,
   username: PropTypes.string,
-  openLogin: PropTypes.func
+  openLogin: PropTypes.func,
+  signOut: PropTypes.func
 };
 
 export default Header;

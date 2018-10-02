@@ -17,11 +17,11 @@
   text-align: right;
 }
 
-#signInText {
+.fakeLinkText {
   color: blue;
 }
 
-#signInText:hover {
+.fakeLinkText:hover {
   text-decoration: underline;
   cursor: pointer;
 }

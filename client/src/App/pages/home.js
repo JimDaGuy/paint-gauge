@@ -21,10 +21,20 @@ class Home extends Component {
 
   componentDidMount() {
     // Set state based on localstorage
-    // loggedIn
-    // expired
-    // username
-    // userID
+    const loggedIn = localStorage.getItem('loggedIn');
+    const expired = localStorage.getItem('expired');
+    const username = localStorage.getItem('username');
+    const userID = localStorage.getItem('userID');
+
+    if (loggedIn === 'true') {
+      this.setState({ loggedIn: true });
+
+      if (expired === 'true') {
+        this.setState({ expired: true });
+      }
+
+      this.setState({ username, userID });
+    }
 
     this.getPainting()
       .then(res => this.setState({
@@ -38,7 +48,7 @@ class Home extends Component {
   };
 
   getPainting = async () => {
-    
+
     const response = await fetch('/api/getRandomPainting');
 
     const body = await response.json().catch(console.log(response))
@@ -111,21 +121,30 @@ class Home extends Component {
 
   signOut = () => {
     // Set loggedIn state to false and username to default
-    this.setState({ loggedIn: false, username: 'default' });
-    // Remove token from local storage
+    this.setState({ loggedIn: false, username: 'default', expired: false, userID: 1 });
+    // Clear localstorage on logout
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('expired');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userID');
     localStorage.removeItem('jwToken');
   }
 
   setLoginStates = (username, userID) => {
-    this.setState({ loggedIn: true, expired: false, username, userID })
+    this.setState({ loggedIn: true, expired: false, username, userID });
+    // Store info in localStorage
+    localStorage.setItem('loggedIn', true);
+    localStorage.setItem('expired', false);
+    localStorage.setItem('username', username);
+    localStorage.setItem('userID', userID);
   }
 
   render() {
     return (
       <div className="App">
-        {this.state.loggingIn ? <LoginOverlay exitLogin={this.closeOverlays} openCreateOverlay={this.openCreateAccount} setLoginStates={this.setLoginStates}/> : ''}
-        {this.state.creatingAccount ? <CreateAccountOverlay exitCreate={this.closeOverlays} openLoginOverlay={this.openLogin}/> : ''}
-        <Header loggedIn={this.state.loggedIn} username={this.state.username} openLogin={this.openLogin}/>
+        {this.state.loggingIn ? <LoginOverlay exitLogin={this.closeOverlays} openCreateOverlay={this.openCreateAccount} setLoginStates={this.setLoginStates} /> : ''}
+        {this.state.creatingAccount ? <CreateAccountOverlay exitCreate={this.closeOverlays} openLoginOverlay={this.openLogin} /> : ''}
+        <Header loggedIn={this.state.loggedIn} username={this.state.username} openLogin={this.openLogin} signOut={this.signOut} />
         <PaintCarousel locked={this.state.locked} imageSrc={this.state.imageSrc} artName={this.state.artName} unlockRating={this.unlockRating} />
         <Ratings ref={instance => { this.ratingComponent = instance; }} artName={this.state.artName} sendRating={this.sendRating} />
       </div>
